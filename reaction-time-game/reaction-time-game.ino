@@ -24,7 +24,7 @@ void setup() {
   // Set joystick pins as inputs
   pinMode(x_pin, INPUT);
   pinMode(y_pin, INPUT);  
-  pinMode(sw_pin, INPUT);
+  pinMode(sw_pin, INPUT_PULLUP);  // Use INPUT_PULLUP for the switch
 
   // Set LED pins as outputs
   pinMode(led_up, OUTPUT);
@@ -37,6 +37,35 @@ void loop() {
   // Read the joystick values
   int x_data = analogRead(x_pin);
   int y_data = analogRead(y_pin);
+  int sw_state = digitalRead(sw_pin);  // Read the state of the switch
+
+  // If the switch is pressed (LOW state because of INPUT_PULLUP)
+  if (sw_state == LOW) {
+    // Turn on all 4 LEDs
+    digitalWrite(led_up, HIGH);
+    digitalWrite(led_down, HIGH);
+    digitalWrite(led_left, HIGH);
+    digitalWrite(led_right, HIGH);
+
+    // Display message on the LCD
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("All LEDs ON!");
+
+    // Wait for 2 seconds
+    delay(2000);
+
+    // Turn off all 4 LEDs
+    digitalWrite(led_up, LOW);
+    digitalWrite(led_down, LOW);
+    digitalWrite(led_left, LOW);
+    digitalWrite(led_right, LOW);
+
+    // Display the default message again
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Joystick ready");
+  }
 
   // Clear LCD for new direction display
   lcd.clear();
