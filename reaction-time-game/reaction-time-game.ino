@@ -6,7 +6,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 int x_pin = A0;              // Joystick X-axis pin
 int y_pin = A1;              // Joystick Y-axis pin
-int start_button_pin = 2;    // Pin for the start button (external button)
+int button_pin = 2;          // Pin for the start button (external button)
 
 int led_up = 3;              // Pin for up direction LED
 int led_down = 4;            // Pin for down direction LED
@@ -19,52 +19,32 @@ bool waitingForReaction = false;
 long startTime = 0;
 bool gameStarted = false;
 bool gameOver = false;
+bool buttonPressed = false;  // Track button state for debouncing
 
 void setup() {
-  // Initialize Serial communication
   Serial.begin(9600);
-
-  // Initialize the LCD
   lcd.init();
   lcd.backlight();
 
-  // Set joystick pins as inputs
   pinMode(x_pin, INPUT);
   pinMode(y_pin, INPUT);
-
-  // Set start button pin as input with pull-up
-  pinMode(start_button_pin, INPUT_PULLUP);  // Using INPUT_PULLUP for the external button
-
-  // Set LED pins as outputs
+  pinMode(button_pin, INPUT_PULLUP);  // Button with internal pull-up
   pinMode(led_up, OUTPUT);
   pinMode(led_down, OUTPUT);
   pinMode(led_left, OUTPUT);
   pinMode(led_right, OUTPUT);
 
-  // Show the start menu
   showStartMenu();
 }
 
 void loop() {
   if (!gameStarted && !gameOver) {
     // Wait for the player to press the button to start the game
-    if (digitalRead(start_button_pin) == LOW) {  // Button pressed (LOW due to INPUT_PULLUP)
-      delay(200);  // Debounce delay
-      if (digitalRead(start_button_pin) == LOW) {  // Check again after the delay to confirm the press
-        gameStarted = true;
-        startGame();
-      }
-    }
+    handleButtonPress();  // Check for button press
   } else if (gameOver) {
-    // Wait for the player to press the button to start over
-    if (digitalRead(start_button_pin) == LOW) {
-      delay(200);  // Debounce delay
-      if (digitalRead(start_button_pin) == LOW) {
-        restartGame();
-      }
-    }
+    handleGameOver();  // Handle game over state
   } else {
-    playRound();
+    playRound();  // Play the game round
   }
 }
 
@@ -77,21 +57,16 @@ void showStartMenu() {
 }
 
 void startGame() {
-  // Clear LCD and prepare for the game
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Get Ready!");
   delay(2000);  // Delay before starting the first round
-
   score = 0;  // Reset the score
 }
 
 void playRound() {
   // Reset LEDs
-  digitalWrite(led_up, LOW);
-  digitalWrite(led_down, LOW);
-  digitalWrite(led_left, LOW);
-  digitalWrite(led_right, LOW);
+  turnOffAllLEDs();
 
   // Randomly choose a direction
   int chosenLED = random(1, 5);  // 1: up, 2: down, 3: left, 4: right
@@ -118,35 +93,36 @@ void playRound() {
 
     // Correct direction guess
     if (chosenLED == 1 && y_data <= 100) {  // Up direction
-      recordReactionTime(chosenLED);
+      recordReactionTime();
     } else if (chosenLED == 2 && y_data >= 650) {  // Down direction
-      recordReactionTime(chosenLED);
+      recordReactionTime();
     } else if (chosenLED == 3 && x_data <= 100) {  // Left direction
-      recordReactionTime(chosenLED);
+      recordReactionTime();
     } else if (chosenLED == 4 && x_data >= 650) {  // Right direction
-      recordReactionTime(chosenLED);
+      recordReactionTime();
     }
     
     // Wrong guess triggers a game over
-    else if ((chosenLED == 1 && (y_data >= 650 || x_data <= 100 || x_data >= 650)) ||  // Up LED, but joystick moved down, left, or right
-             (chosenLED == 2 && (y_data <= 100 || x_data <= 100 || x_data >= 650)) ||  // Down LED, but joystick moved up, left, or right
-             (chosenLED == 3 && (y_data <= 100 || y_data >= 650 || x_data >= 650)) ||  // Left LED, but joystick moved up, down, or right
-             (chosenLED == 4 && (y_data <= 100 || y_data >= 650 || x_data <= 100))) {  // Right LED, but joystick moved up, down, or left
-      gameOverSequence();
+    else if ((chosenLED == 1 && (y_data >= 650 || x_data <= 100 || x_data >= 650)) ||  // Up LED
+             (chosenLED == 2 && (y_data <= 100 || x_data <= 100 || x_data >= 650)) ||  // Down LED
+             (chosenLED == 3 && (y_data <= 100 || y_data >= 650 || x_data >= 650)) ||  // Left LED
+             (chosenLED == 4 && (y_data <= 100 || y_data >= 650 || x_data <= 100))) {  // Right LED
+      gameOver = true;  // Set gameOver flag
+      waitingForReaction = false;  // Stop waiting for reaction
     }
   }
 
   // Ensure all LEDs are off after the player guesses correctly
   turnOffAllLEDs();
 
-  // After a correct guess, display "Get Ready" for the next round
+  // Show "Get Ready!" for 1 second after a correct guess
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Get Ready!");
-  delay(2000);  // Delay to give the player time before the next round
+  delay(100);  // Delay to show "Get Ready!" message
 }
 
-void recordReactionTime(int chosenLED) {
+void recordReactionTime() {
   // Calculate reaction time
   reactionTime = millis() - startTime;
 
@@ -179,29 +155,34 @@ void recordReactionTime(int chosenLED) {
   delay(2000);
 }
 
-void gameOverSequence() {
-  // Set gameOver flag to true
-  gameOver = true;
-
+void handleGameOver() {
   // Turn off all LEDs
   turnOffAllLEDs();
 
-  // Display "Wrong guess!" and the score
+  // Display "Game Over" and the score
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Wrong guess!");
+  lcd.print("Game Over!");
   lcd.setCursor(0, 1);
   lcd.print("Score: ");
   lcd.print(score);
-
-  delay(3000);  // Wait for 3 seconds to show the message
+  
+  delay(4000);  // Wait for 3 seconds to show the message
 
   // Display "Start Over?" message
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Start Over?");
-  lcd.setCursor(0, 1);
-  lcd.print("Press Button");
+
+  // Wait for the button press to restart the game
+  while (true) {
+    handleButtonPress();  // Check for button press
+    if (buttonPressed) {
+      buttonPressed = false;  // Reset button state
+      restartGame();  // Restart the game
+      break;  // Break the loop after restarting
+    }
+  }
 }
 
 void restartGame() {
@@ -212,6 +193,20 @@ void restartGame() {
 
   // Show start menu again
   showStartMenu();
+}
+
+void handleButtonPress() {
+  // Check for button press
+  if (digitalRead(button_pin) == LOW && !buttonPressed) {
+    delay(200);  // Debounce delay
+    if (digitalRead(button_pin) == LOW) {  // Confirm press
+      buttonPressed = true;  // Set button pressed state
+      if (!gameStarted && !gameOver) {
+        gameStarted = true;  // Start the game
+        startGame();
+      }
+    }
+  }
 }
 
 void turnOffAllLEDs() {
