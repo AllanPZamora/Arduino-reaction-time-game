@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-// Set the LCD address to 0x27 for a 16 chars and 2-line display
+// LCD setup (16x2 LCD at I2C address 0x27)
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 int x_pin = A0;
@@ -13,72 +13,105 @@ int led_down = 4;
 int led_left = 5;
 int led_right = 6;
 
+int score = 0;
+long reactionTime = 0;
+bool waitingForReaction = false;
+long startTime = 0;
+
 void setup() {
   // Initialize Serial communication
   Serial.begin(9600);
 
   // Initialize the LCD
   lcd.init();
-  lcd.backlight();  // Turn on the LCD backlight
-  
+  lcd.backlight();
+
   // Set joystick pins as inputs
   pinMode(x_pin, INPUT);
-  pinMode(y_pin, INPUT);  
-  pinMode(sw_pin, INPUT);
+  pinMode(y_pin, INPUT);
+  pinMode(sw_pin, INPUT_PULLUP);  // Use INPUT_PULLUP for the switch
 
   // Set LED pins as outputs
   pinMode(led_up, OUTPUT);
   pinMode(led_down, OUTPUT);
   pinMode(led_left, OUTPUT);
   pinMode(led_right, OUTPUT);
+
+  // Welcome message on LCD
+  lcd.setCursor(0, 0);
+  lcd.print("Reaction Time!");
+  delay(2000);
 }
 
 void loop() {
-  // Read the joystick values
-  int x_data = analogRead(x_pin);
-  int y_data = analogRead(y_pin);
+  // Reset LEDs
+  digitalWrite(led_up, LOW);
+  digitalWrite(led_down, LOW);
+  digitalWrite(led_left, LOW);
+  digitalWrite(led_right, LOW);
 
-  // Clear LCD for new direction display
+  // Randomly choose a direction
+  int chosenLED = random(1, 5);  // 1: up, 2: down, 3: left, 4: right
+
+  // Light up the corresponding LED
+  if (chosenLED == 1) {
+    digitalWrite(led_up, HIGH);
+  } else if (chosenLED == 2) {
+    digitalWrite(led_down, HIGH);
+  } else if (chosenLED == 3) {
+    digitalWrite(led_left, HIGH);
+  } else if (chosenLED == 4) {
+    digitalWrite(led_right, HIGH);
+  }
+
+  // Record the start time
+  startTime = millis();
+  waitingForReaction = true;
+
+  // Wait for the correct joystick movement
+  while (waitingForReaction) {
+    int x_data = analogRead(x_pin);
+    int y_data = analogRead(y_pin);
+
+    // Check if the correct joystick movement is made
+    if (chosenLED == 1 && y_data <= 100) {  // Up direction
+      recordReactionTime();
+    } else if (chosenLED == 2 && y_data >= 650) {  // Down direction
+      recordReactionTime();
+    } else if (chosenLED == 3 && x_data <= 100) {  // Left direction
+      recordReactionTime();
+    } else if (chosenLED == 4 && x_data >= 650) {  // Right direction
+      recordReactionTime();
+    }
+  }
+
+  // Wait for 1 second before next round
+  delay(1000);
+}
+
+void recordReactionTime() {
+  // Calculate reaction time
+  reactionTime = millis() - startTime;
+
+  // Update score based on reaction time (lower time gives more points)
+  if (reactionTime < 500) {
+    score += 10;
+  } else if (reactionTime < 1000) {
+    score += 5;
+  } else {
+    score += 2;
+  }
+
+  // Display reaction time and score on LCD
   lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Time: ");
+  lcd.print(reactionTime);
+  lcd.print(" ms");
+  lcd.setCursor(0, 1);
+  lcd.print("Score: ");
+  lcd.print(score);
 
-  // Control LED states and display direction based on joystick movement
-  if (y_data <= 100) {  // Up direction (Y = 0)
-    digitalWrite(led_up, HIGH);  // Turn on LED up
-    lcd.setCursor(0, 0);  // Set cursor to the top line
-    lcd.print("Up direction");  // Display direction on LCD
-  } else {
-    digitalWrite(led_up, LOW);  // Turn off LED
-  }
-
-  if (y_data >= 650) {  // Down direction (Y = 670)
-    digitalWrite(led_down, HIGH);  // Turn on LED down
-    lcd.setCursor(0, 0);
-    lcd.print("Down direction");
-  } else {
-    digitalWrite(led_down, LOW);  // Turn off LED
-  }
-
-  if (x_data <= 100) {  // Left direction (X = 0)
-    digitalWrite(led_left, HIGH);  // Turn on LED left
-    lcd.setCursor(0, 0);
-    lcd.print("Left direction");
-  } else {
-    digitalWrite(led_left, LOW);  // Turn off LED
-  }
-
-  if (x_data >= 650) {  // Right direction (X = 670)
-    digitalWrite(led_right, HIGH);  // Turn on LED right
-    lcd.setCursor(0, 0);
-    lcd.print("Right direction");
-  } else {
-    digitalWrite(led_right, LOW);  // Turn off LED
-  }
-
-  // Print joystick data to the Serial Monitor for debugging
-  Serial.print("X: ");
-  Serial.print(x_data);
-  Serial.print("\tY: ");
-  Serial.println(y_data);
-
-  delay(100);
+  // End the reaction phase
+  waitingForReaction = false;
 }
