@@ -42,4 +42,4 @@ Below is a brief description of how to wire the components:
 
 ### Wiring Diagram
 
-![Circuit Diagram](img/circuit-diagram.png)
+![Circuit Diagram](img/circuit-diagram.PNG)
