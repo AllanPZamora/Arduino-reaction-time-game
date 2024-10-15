@@ -8,7 +8,6 @@ A reaction time game where an LED lights up, and the player must move the joysti
 - [Hardware Requirements](#hardware-requirements)
 - [Circuit Diagram](#circuit-diagram)
 - [Installation](#installation)
-- [Installation](#installation)
 - [Usage](#usage)
 
 ## Project Overview
