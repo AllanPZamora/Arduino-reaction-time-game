@@ -67,11 +67,10 @@ void startGame() {
 void playRound() {
   // Reset LEDs
   turnOffAllLEDs();
-
   // Randomly choose a direction
   int chosenLED = random(1, 5);  // 1: up, 2: down, 3: left, 4: right
-
   // Light up the corresponding LED
+
   if (chosenLED == 1) {
     digitalWrite(led_up, HIGH);
   } else if (chosenLED == 2) {
@@ -90,7 +89,6 @@ void playRound() {
   while (waitingForReaction) {
     int x_data = analogRead(x_pin);
     int y_data = analogRead(y_pin);
-
     // Correct direction guess
     if (chosenLED == 1 && y_data <= 100) {  // Up direction
       recordReactionTime();
@@ -101,7 +99,6 @@ void playRound() {
     } else if (chosenLED == 4 && x_data >= 650) {  // Right direction
       recordReactionTime();
     }
-    
     // Wrong guess triggers a game over
     else if ((chosenLED == 1 && (y_data >= 650 || x_data <= 100 || x_data >= 650)) ||  // Up LED
              (chosenLED == 2 && (y_data <= 100 || x_data <= 100 || x_data >= 650)) ||  // Down LED
@@ -111,10 +108,8 @@ void playRound() {
       waitingForReaction = false;  // Stop waiting for reaction
     }
   }
-
   //all LEDs are off after the player guesses correctly
   turnOffAllLEDs();
-
   // Show "Get Ready!"
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -125,7 +120,6 @@ void playRound() {
 void recordReactionTime() {
   // Calculate reaction time
   reactionTime = millis() - startTime;
-
   // Update score based on reaction time (adjusted as per new system)
   if (reactionTime <= 100) {
     score += 10;
@@ -138,7 +132,6 @@ void recordReactionTime() {
   } else {
     score += 1;
   }
-
   // Display reaction time and score on LCD
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -148,13 +141,10 @@ void recordReactionTime() {
   lcd.setCursor(0, 1);
   lcd.print("Score: ");
   lcd.print(score);
-
   // End the reaction phase
   waitingForReaction = false;
-
   // Ensure LED is turned off immediately after a correct guess
   turnOffAllLEDs();
-  
   // Delay to allow the player to see the score and reaction time
   delay(2000);
 }
