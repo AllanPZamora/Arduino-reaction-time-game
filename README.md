@@ -1,6 +1,6 @@
 # Reaction Time Game with Arduino
 
-This project is a reaction time game built using an **Arduino Uno**. In this game, an LED lights up randomly, and the player must move the joystick in the correct direction as quickly as possible. The LCD screen displays the player's reaction time and updates the score after each round. The game helps to test and improve the player's reaction speed.
+A reaction time game where an LED lights up, and the player must move the joystick as quickly as possible in the correct direction. The player's reaction time and score are displayed on an LCD screen.
 
 ## Table of Contents
 - [Project Overview](#project-overview)
@@ -9,28 +9,36 @@ This project is a reaction time game built using an **Arduino Uno**. In this gam
 - [Circuit Diagram](#circuit-diagram)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Code](#code)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Project Overview
-The reaction time game is designed to:
-- **Light up an LED**: The game randomly selects one of four LEDs to light up.
-- **Measure joystick reaction**: The player must move the joystick in response to the LED light.
-- **Display feedback**: The reaction time and score are displayed on a 1602 I2C LCD screen.
-
-The game helps measure how quickly a player can react and provides feedback after each round.
+The reaction time game randomly lights up an LED, and the player must quickly move the joystick in the corresponding direction. The game records the player's reaction time and updates the score after each round, displayed on a 1602 I2C LCD screen.
 
 ## Features
 - Randomly lights up one of four LEDs.
-- Tracks and displays reaction time in milliseconds.
-- Keeps track of the player's score.
-- Easy to reset and replay.
+- Records and displays reaction time in milliseconds.
+- Keeps track of the player's score and displays it on an LCD.
+- Easy to reset and replay the game.
 
 ## Hardware Requirements
-To build this project, you will need the following components:
-- 1 x Arduino Uno
-- 4 x LEDs (any color)
-- 4 x 220Ω resistors
-- 1 x Joystick module
-- 1 x IIC 1602 LCD display
-- Breadboard and jumper wires
+Here are the components you will need:
+
+| Component        | Quantity | Image                                      |
+|------------------|----------|--------------------------------------------|
+| Arduino Uno      | 1        | ![Arduino Uno](img/arduino-uno.png)        |
+| LED (any color)  | 4        | ![LED](img/led.png)                        |
+| 220Ω Resistor    | 4        | ![Resistor](img/resistor.png)              |
+| Joystick Module  | 1        | ![Joystick](img/joystick.png)              |
+| Button           | 1        | ![Button](img/button.png)                  |
+| I2C LCD (1602)   | 1        | ![LCD](img/lcd.png)                        |
+| Breadboard       | 1        | ![Breadboard](img/breadboard.png)          |
+| Jumper Wires     | As needed| ![Jumper Wires](img/jumper-wires.png)      |
+
+## Circuit Diagram
+Below is a brief description of how to wire the components:
+- **LEDs**: Connect each LED to a digital pin on the Arduino (pins 3, 4, 5, 6). Use a 220Ω resistor in series with each LED.
+- **Joystick Module**: Connect X and Y pins to analog pins A0 and A1. GND goes to GND, and VCC goes to 5V.
+- **Button**: The button pin is connected to pin 2.
+- **LCD I2C**: Connect SDA to A4, SCL to A5. VCC to 5V, and GND to GND.
