@@ -8,6 +8,8 @@ A reaction time game where an LED lights up, and the player must move the joysti
 - [Hardware Requirements](#hardware-requirements)
 - [Circuit Diagram](#circuit-diagram)
 - [Installation](#installation)
+- [Installation](#installation)
+- [Usage](#usage)
 
 ## Project Overview
 The reaction time game randomly lights up an LED, and the player must quickly move the joystick in the corresponding direction. The game records the player's reaction time and updates the score after each round, displayed on a 1602 I2C LCD screen.
@@ -43,3 +45,33 @@ Below is a brief description of how to wire the components:
 ### Wiring Diagram
 
 ![Circuit Diagram](img/circuit-diagram.PNG)
+
+## Installation
+
+### 1. Install the required libraries
+- Open Arduino IDE and go to **Sketch > Include Library > Manage Libraries...**
+- Search for and install the `LiquidCrystal_I2C` library for the I2C LCD display.
+
+### 2. Upload the code
+- Open the provided `.ino` file in the Arduino IDE.
+- Under **Tools > Board**, select **Arduino Uno**.
+- Under **Tools > Port**, select the correct port for your Arduino.
+- Click the upload button to upload the code to your Arduino.
+
+## Usage
+
+### Start the game:
+- Once powered on, press the start button to begin the game.
+- The LCD will display "Get Ready!" and then randomly light up one of the LEDs.
+
+### Move the joystick:
+- Quickly move the joystick in the corresponding direction (up, down, left, or right) as soon as the LED lights up.
+
+### Score and reaction time:
+- The LCD will display your reaction time in milliseconds and update your score after each round.
+
+### Game over:
+- If you make an incorrect joystick movement, the game will display "Game Over" along with your final score.
+
+### Restart the game:
+- After the game ends, press the button to restart.
