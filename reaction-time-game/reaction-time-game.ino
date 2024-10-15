@@ -112,10 +112,10 @@ void playRound() {
     }
   }
 
-  // Ensure all LEDs are off after the player guesses correctly
+  //all LEDs are off after the player guesses correctly
   turnOffAllLEDs();
 
-  // Show "Get Ready!" for 1 second after a correct guess
+  // Show "Get Ready!"
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Get Ready!");
@@ -126,13 +126,17 @@ void recordReactionTime() {
   // Calculate reaction time
   reactionTime = millis() - startTime;
 
-  // Update score based on reaction time (lower time gives more points)
-  if (reactionTime < 500) {
+  // Update score based on reaction time (adjusted as per new system)
+  if (reactionTime <= 100) {
     score += 10;
-  } else if (reactionTime < 1000) {
+  } else if (reactionTime <= 250) {
     score += 5;
-  } else {
+  } else if (reactionTime <= 500) {
+    score += 3;
+  } else if (reactionTime <= 1000) {
     score += 2;
+  } else {
+    score += 1;
   }
 
   // Display reaction time and score on LCD
@@ -150,10 +154,11 @@ void recordReactionTime() {
 
   // Ensure LED is turned off immediately after a correct guess
   turnOffAllLEDs();
-
+  
   // Delay to allow the player to see the score and reaction time
   delay(2000);
 }
+
 
 void handleGameOver() {
   // Turn off all LEDs
